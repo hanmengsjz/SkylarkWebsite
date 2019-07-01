@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <div th:replace="/mall/common  :: commonHeader(商品列表)"></div>
+  <style>
+    .nav-span {
+      display: none
+    }
+
+    .gwc {
+      bottom: 20px;
+      right: 20px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="container goods" id="app">
+  <div th:replace="/mall/common :: commonNav"></div>
+  <div class="detailCont">
+    <breadcrumb>
+      <breadcrumb-item to="/mall">商城</breadcrumb-item>
+      <breadcrumb-item>{{getSearchKeyWord('class_one') || getSearchKeyWord('type') ? getSearchKeyWord('class_one') :
+        '搜索'}}
+      </breadcrumb-item>
+      <breadcrumb-item>{{getSearchKeyWord('class_two') || getSearchKeyWord('type') || getSearchKeyWord('search')}}
+      </breadcrumb-item>
+    </breadcrumb>
+    <Divider v-if="!(goodsData.length>0)">暂时没有更多了</Divider>
+    <div v-else class="detail-area">
+      <div class="detail-goods-list" v-for="(items,index) in goodsData">
+        <a :href="'/goodDetails?id='+items.id" class="detail-area-A" target="_blank">
+          <div class="goods-list-Img">
+            <img :src="items.image"/>
+          </div>
+          <h2 class="h2s">{{items.name || items.productName}}</h2>
+          <p class="ps-02"><span>售价：</span>￥{{items.price}}</p>
+        </a>
+        <!-- <span @click="test_click(items.id)" class="gwc"><img src="/assets/image/mall/car.png"
+                                                             alt=""></span> -->
+      </div>
+    </div>
+    <div style="display: flex;margin: 20px;justify-content: center">
+      <page :total="pageCount" :page-size="40" size="small" show-elevator show-total @on-change="pageChange"/>
+    </div>
+  </div>
+  <div th:replace="/mall/common :: commonFooter"></div>
+</div>
+</body>
+<script type="text/javascript">
+  const mixin = {
+    data() {
+      return {
+        classData: [],
+        goodsData: [],
+        pageCount: 0,
+        url: '',
+        filters: {}
+      }
+    },
+    methods: {
+      test_click(e) {
+        if (this.userInfo.name != null) {
+          $.ajax({
+            type: "post",
+            url: "/t_trolley/addt_trolley",
+            dataType: "json",
+            data: {
+              product_id: e,
+              user_id: this.userInfo.id,
+              number: 1
+            },
+            success: (res) => {
+              if (res.code == 1) {
+                this.$Message.info(res.msg)
+              } else {
+                this.$Message.info(res.msg)
+              }
+            }
+          });
+        } else {
+          this.$Message.info('请先登录');
+        }
+      },
+      getClass() {
+        $.ajax({
+          type: "post",
+          url: "/selectAllproductation",
+          dataType: "json",
+          success: (res) => {
+            if (res.code == 1) {
+              this.classData = res.data
+            }
+          }
+        });
+      },
+      pageChange(page) {
+        this.getGoods(this.url, {...this.filters, page})
+      },
+      getGoods(url, data) {
+        $.ajax({
+          type: "post",
+          url,
+          dataType: "json",
+          data: {...data, limit: 20},
+          success: (res) => {
+            if (res.code == 1) {
+              this.getHrefParam('zone') ? this.goodsData = res.data.productLists : this.goodsData = res.data
+              this.pageCount = res.count
+            }
+          }
+        });
+      }
+    },
+    mounted() {
+      this.getClass()
+      if (this.getHrefParam('id')) {
+        this.url = 'findProductByProductTypeList'
+        this.filters = {'producttypeid': this.getSearchKeyWord('id')}
+      } else if (this.getSearchKeyWord('search')) {
+        this.url = 'listProductByProductTypeId'
+        this.filters = {'productName': this.getSearchKeyWord('search')}
+      } else if (this.getHrefParam('zone')) {
+        this.url = 'listZoneByTypeIdPage'
+        this.filters = {'zoneId': this.getSearchKeyWord('zone')}
+      } else if (this.getHrefParam('class_cont')) {
+        this.url = 'listProductByClassTypeId'
+        this.filters = {'classificationIds': this.getSearchKeyWord('class_cont')}
+      } else if (this.getSearchKeyWord('type')) {
+        this.url = 'selectbyDESC'
+      }
+      this.getGoods(this.url, {...this.filters, page: 1})
+    }
+  }
+</script>
+<div th:replace="/mall/common :: commonFooterjs"></div>
+</html>

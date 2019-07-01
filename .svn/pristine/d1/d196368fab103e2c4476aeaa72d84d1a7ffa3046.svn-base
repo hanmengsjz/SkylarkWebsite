@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<meta name="referrer" content="no-referrer">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=2"/>
+  <meta name="renderer" content="webkit">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1, minimum-scale=1,user-scalable=no">
+  <div th:replace="/home/common :: commonHeader(关于我们)"></div>
+  <link rel="stylesheet" href="/assets/css/home.css">
+</head>
+<body>
+<div id="app" class="abouts" v-cloak>
+  <div class="banner">
+    <div th:replace="/home/common :: commonNav"></div>
+    <img src="/assets/image/about/banner.png" alt="">
+  </div>
+  <div class="advantages">
+    <div class="titleAll">
+      <p class="titlec">我们的优势</p>
+      <span class="titleen">our advantages</span>
+    </div>
+    <div class="wrap flex">
+      <div v-for="(item,index) in advantageList" class="list">
+        <p class="icon"><img :src="'/assets/image/about/icon'+(index+1)+'.png'" alt=""/></p>
+        <p class="name">{{item.title}}</p>
+        <p class="cont">{{item.content}}</p>
+      </div>
+    </div>
+  </div>
+  <div class="about">
+    <div class="titleAll">
+      <p class="titlec">关于我们</p>
+      <span class="titleen">About Us</span>
+    </div>
+    <div class="about-cont wrap flex">
+      <div class="left" id="left">
+        <img src="/assets/image/about/aboutUs.png" alt=""/>
+      </div>
+      <div class="right" id="right">
+        <p>
+          云阙将打造一个综合型的集团化公司，树立“顶层”思维，不仅专业，更要卓越！不断完善公司旗下各大产业，融合资源，建设完整商业链，打造良好的商业生态，与此同时，我们将持续关注公益产业，体现企业的社会价值，做受人尊敬的正能量企业！</p>
+      </div>
+      <div class="clear"></div>
+    </div>
+  </div>
+  <div th:replace="/home/common :: commonFooter"></div>
+</div>
+<script>
+  const mixin = {
+    data() {
+      return {
+        advantageList: []
+      }
+    },
+    methods: {
+      getAdvantage() {
+        $.ajax({
+          type: "post",
+          url: "/selectAllOurAdvantagesList",
+          dataType: "json",
+          success: (res) => {
+            if (res.code == 1) {
+              this.advantageList = res.data
+            }
+          }
+        });
+      }
+    },
+    mounted() {
+      this.getAdvantage()
+    }
+  }
+
+  function scroll() {
+    if (window.pageYOffset !== null) {
+      return {
+        top: window.pageYOffset,
+        left: window.pageXOffset
+      }
+    } else if (document.compatMode === "CSS1Compat") {
+      return {
+        top: document.documentElement.scrollTop,
+        left: document.documentElement.scrollLeft
+      }
+    }
+    return {
+      top: document.body.scrollTop,
+      left: document.body.scrollLeft
+    }
+  }
+
+  let num = 1
+  window.onscroll = function () {
+
+    let list = document.querySelectorAll(".list")
+    if (scroll().top > 700 && num == 1) {
+
+      for (let i = 0; i < list.length; i++) {
+        list[i].classList.add("active");
+      }
+      num++
+      return false
+    }
+  }
+</script>
+<div th:replace="/home/common :: commonFooterjs"></div>
+</body>
+</html>

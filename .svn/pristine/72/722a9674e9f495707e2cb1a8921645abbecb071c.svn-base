@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+  <meta name="renderer" content="webkit">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1,user-scalable=no">
+  <title>订单确认</title>
+  <div th:replace="/mall/common  :: commonHeader(云阙商城)"></div>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/iview-area@1/dist/iview-area.min.js"></script>
+  <script src="/assets/layui/layui.js" charset="utf-8"></script>
+  <style>
+    .nav-big-box {
+      position: relative;
+      font-size: 0;
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body id="mallorder ">
+<div id="app" class="order">
+  <div th:replace="/mall/common :: commonNav"></div>
+  <div class="wrap">
+    <div class="main_wrap ddmx">
+      <div class="lcbox">
+        <div class="liucheng">
+          <div class="bz">
+            <p>1</p>
+            <h1>提交订单</h1>
+          </div>
+          <div class="lj">
+            <img src="/assets/image/mall/jtxy.png">
+          </div>
+          <div class="bz on">
+            <p>2</p>
+            <h1>订单确认</h1>
+          </div>
+          <div class="lj">
+            <img src="/assets/image/mall/jtxy.png">
+          </div>
+          <div class="bz">
+            <p>3</p>
+            <h1>支付订单</h1>
+          </div>
+        </div>
+      </div>
+      <div class="sestion">
+        <div class="shxx-top">
+          <span class="active">收货信息</span>
+        </div>
+        <div id="shdz">
+          <span v-show="show">还没有地址请先添加地址</span>
+          <div :class="{on: (index == indexs)}" @click="mapon(index,items.goods_id)" class="shdz1 ons" data-index="1"
+               v-for="(items,index) in mapListarr">
+            <div class="userinfo">
+              <img src="/assets/image/mall/na.png" class="users-img"><span class="user-name">
+									{{items.goods_name}}</span><span class="user-tell">{{items.goods_tel}}</span>
+            </div>
+            <div class="userinfo">
+								<span class="hd-name"><img src="/assets/image/mall/address.png" class="users-img">地址：
+								</span>
+              <div class="addr">{{items.goods_address}}</div>
+            </div>
+            <div class="dele clearfix" style="">
+              <div class="dele-box de-left">
+                <img src="/assets/image/mall/xg.png" class="users-img"><span class="de-span"
+                                                                             @click="edit(items)">编辑</span>
+              </div>
+              <div class="dele-box">
+                <img src="/assets/image/mall/de.png" class="users-img"><span class="de-span"
+                                                                             @click="dele(items.goods_id)">删除</span>
+              </div>
+            </div>
+            <div class="clear"></div>
+            <p class="mrdz" v-if="items.goods_ster=='1'">默认地址</p>
+          </div>
+        </div>
+        <div class="adddz">
+          <a @click="newAddress" href="javascript:"> 添加新地址 </a>
+        </div>
+        <div class="sestion sestion3" v-if="listcar">
+          <h1>商品信息</h1>
+          <div class="flex spxx-title">
+            <div class="li">品名</div>
+            <div class="li">规格</div>
+            <div class="li">价格</div>
+            <div class="li">采购数量</div>
+            <div class="li">订单金额</div>
+          </div>
+          <div class="flex spxx-cont" v-for="(item,index) in goodscont">
+            <div class="li">
+              <img :src="item.image" alt="">
+              <p>{{item.productName}}</p>
+            </div>
+            <div class="li">
+              <p class="listli" v-for="(item_s,key_s,index_s) in ggindexs">
+                <!--                      {{item_s}}-->
+                {{key_s.split('"')[1]}}:{{item_s.split('"')[1]}}
+              </p>
+<!--              this.ggindexs-->
+<!--              <p class="ligg">{{item.producttypename}}{{item.specifications}}</p>-->
+            </div>
+            <div class="li">¥{{moneygg}}</div>
+            <div class="li" v-if="numshow">
+              <span @click="min(1,moneygg)" class="yuns">-</span><span id="num">{{num}}</span><span id="j"
+                                                                                                    @click="add(1,moneygg)"
+                                                                                                    class="yuns">+</span>
+            </div>
+            <div class="li" v-else>
+              <span>{{item.number}}</span>
+            </div>
+            <!--            <div class="li">{{moneygg*num}}</div>-->
+            <div class="li">{{moneygg*num}}</div>
+          </div>
+        </div>
+        <div class="sestion sestion3" v-else>
+          <h1>商品信息</h1>
+          <div class="flex spxx-title">
+            <div class="li">品名</div>
+            <div class="li">规格</div>
+            <div class="li">价格</div>
+            <div class="li">采购数量</div>
+            <div class="li">订单金额</div>
+          </div>
+          <div class="flex spxx-cont" v-for="(item,index) in goodscont">
+            <div class="li">
+              <img :src="item.image" alt="">
+              <p>{{item.name }}</p>
+            </div>
+            <div class="li">
+              <p v-for="(item_s,key_s,index_s) in item.trolley_specifications">
+                {{key_s.split('"')[1]}}:{{item_s.split('"')[1]}}
+              </p>
+              <!--              <p class="ligg">{{item.trolley_specifications}}</p>-->
+            </div>
+            <div class="li">¥{{item.trolley_price}}</div>
+            <div class="li">
+              {{item.number }}
+            </div>
+            <div class="li">{{item.trolley_price *item.number}}</div>
+
+          </div>
+        </div>
+      </div>
+      <div class="mallinput sestion">
+        <h1>订单备注：</h1>
+        <i-input type="textarea" v-model="bztest"/>
+      </div>
+      <div class=" pay sestion">
+        <h1>支付方式：</h1>
+        <p class="pay-list" :class="{ active: type=='wx' }" @click="toggleType('wx')">微信支付</p>
+        <p class="pay-list" :class="{ active: type=='zfb' }" @click="toggleType('zfb')">支付宝支付</p>
+      </div>
+      <div class="sestion sestion5">
+        <div class="sestion5-left">
+          <h1>应付金额</h1>
+          <p>计算方法：合计=应付货款-优惠金额+物流费用</p>
+        </div>
+        <div class="sestion5-right sestion4">
+          <ul>
+            <li>
+              <p>应付货款：</p>
+              <span class="wlfy">{{pricebig}}</span>
+            </li>
+            <li>
+              <p>优惠金额：</p>
+              <span class="wlfy">{{discounts}}</span>
+            </li>
+            <li>
+              <p>物流费用：</p>
+              <span class="wlfy">{{freights}}</span>
+            </li>
+            <li>
+              <p>合计：</p>
+              <span class="wlfy b">{{pricebig+freights-discounts}}</span>
+            </li>
+          </ul>
+        </div>
+        <div class="clear"></div>
+      </div>
+      <div class="sestion6">
+        <span class="btn" @click="paymentOrder()">立即支付</span>
+        <div class="clear"></div>
+      </div>
+    </div>
+    <div class="clear"></div>
+  </div>
+  <input id="state" v-model="goodsid">
+  <div th:replace="/mall/common :: commonFooter"></div>
+  <Modal title="微信" v-model="qrcode" :mask-closable="false" :closable="false">
+    <div style="display: flex">
+      <canvas id="canvas"></canvas>
+      <div style="line-height: 100px">扫描左侧二维码付款</div>
+    </div>
+    <div slot="footer">
+      <i-button type="success" size="large" long @click="goOrder">支付完成再点我</i-button>
+    </div>
+  </Modal>
+  <Drawer
+          title="收货地址"
+          v-model="editAddress"
+          width="720"
+          :mask-closable="false"
+          :styles="{ height: 'calc(100% - 55px)', overflow: 'auto',paddingBottom: '53px', position: 'static' }"
+          @on-close="closeAddress"
+  >
+    <i-form ref="formData" :model="formData" :rules="ruleValidate">
+      <Row :gutter="32">
+        <i-col span="12">
+          <form-item label="收货人" label-position="top" prop="goods_name">
+            <i-input v-model="formData.goods_name"/>
+          </form-item>
+        </i-col>
+        <i-col span="12">
+          <form-item label="手机号" label-position="top" prop="goods_tel">
+            <i-input v-model="formData.goods_tel"/>
+          </form-item>
+        </i-col>
+      </Row>
+      <form-item label-position="top">
+        <al-cascader data-type="name" v-model="addressArr" level="2"/>
+      </form-item>
+      <form-item label="详细地址" label-position="top" prop="goods_address">
+        <i-input type="textarea" v-model="formData.goods_address" :rows="4"/>
+      </form-item>
+      <form-item label-position="top">
+        <Checkbox v-model="formData.goods_ster" true-value="1" false-value="2">是否设置为默认地址</Checkbox>
+      </form-item>
+    </i-form>
+    <div class="demo-drawer-footer">
+      <i-button type="primary" @click="saveAddress('formData')">保存</i-button>
+    </div>
+  </Drawer>
+</div>
+</body>
+<script>
+
+  const mixin = {
+    data() {
+      return {
+        mapListarr: [],
+        bztest: "",
+        checkboxShows: false,
+        num: this.getHrefParam("num"),
+        show: false,
+        mapList: [],
+        goodsid: null,
+        classData: [],
+        goodscont: [],
+        indexs: 0,
+        type: 'zfb',
+        mapId: null,
+        pricebig: null,
+        freights: null,
+        discounts: null,
+        numshow: true,
+        listcar: true,
+        orders: {
+          id: "",
+          order_number: this.getHrefParam("num"),
+          order_mode: "",
+          user_id: localStorage.getItem("SkyUserId")
+        },
+        qrcode: false,
+        editAddress: false,
+        formData: {},
+        addressArr: [],
+        Specifications: [],
+        ggindexs: {},
+        moneygg: null,
+        kccount: null,
+        ruleValidate: {
+          goods_tel: [
+            {
+              validator: (rule, value, callback) => {
+                if (!value) {
+                  return callback(new Error('请填写手机号'));
+                } else if (!/^[1][3,4,5,6,7,8,9][0-9]{9}$/.test(value)) {
+                  callback('手机号格式不正确');
+                } else {
+                  callback();
+                }
+              }, trigger: 'blur'
+            }
+          ],
+          goods_name: [
+            {required: true, message: '请填写姓名', trigger: 'blur'}
+          ],
+          addressArr: [
+            {required: true, message: '请选择位置信息', trigger: 'change'}
+          ],
+          goods_address: [
+            {required: true, message: '请填写详细地址', trigger: 'blur'}
+          ],
+        }
+      }
+    },
+    methods: {
+      closeAddress() {
+        this.formData = {}
+        this.addressArr = []
+      },
+      useqrcode(canvasData) {
+        let canvas = document.getElementById('canvas')
+        QRCode.toCanvas(canvas, canvasData, function (error) {
+        })
+      },
+      goOrder() {
+        window.location.href = '/orderList'
+      },
+      //支付方式
+      toggleType(types) {
+        this.type = types
+      },
+      //支付
+      paymentOrder() {
+        //生成订单
+        $.ajax({
+          type: "get",
+          url: "/t_order/Generateorder",
+          data: (this.getHrefParam("id") == "") ? {
+            trolley_id: window.location.href.split("=")[1],
+            order_mode: this.orders.order_mode,
+            user_id: localStorage.getItem("SkyUserId")
+          } : {
+            trolley_id: "",
+            id: this.orders.id,
+            order_number: this.orders.order_number,
+            order_mode: this.orders.order_mode,
+            specifications: JSON.stringify(this.ggindexs),
+            user_id: localStorage.getItem("SkyUserId"),
+            remarks: this.bztest
+          },
+          // contentType: 'application/json',
+          dataType: "json",
+          success: (res) => {
+            console.log("tes" + 666555)
+            console.log(res)
+
+            if (res.code == -1) {
+              this.$Message.info(res.msg);
+              return false
+            } else {
+              //判断支付方式
+              if (this.type == 'zfb') {
+                window.location.href = "/alipay/pcPay?order_no=" + res.data + "&order_money=" + (this.pricebig - this.discounts + this.freights)
+              } else {
+                $.ajax({
+                  type: "get",
+                  url: "/wXpay_pc",
+                  data: {out_trade_no: res.data, total_money: (this.pricebig - this.discounts + this.freights) * 100},
+                  contentType: 'application/json',
+                  dataType: "json",
+                  success: (res_) => {
+                    if (res_.success) {
+                      this.qrcode = true
+                      this.useqrcode(res_.data.code_url)
+                    } else {
+
+                    }
+                  }
+                });
+              }
+            }
+          }
+        });
+      },
+
+
+      //得到商品详情
+      getggmoneys() {
+       // alert(this.getHrefParam("gg"))
+        console.log(this.getHrefParam("gg"))
+        $.ajax({
+          type: "post",
+          url: "selectAllspecificationValue",
+          data: {
+            product_id: this.getHrefParam("id"),
+          },
+          dataType: "json",
+          success: (res) => {
+            this.Specifications = res.data[0]
+            console.log(this.Specifications)
+            console.log(12333)
+            console.log(res.data[0])
+            console.log(this.ggindexs)
+            let ggnum = this.getHrefParam("gg").split("")
+            console.log(res.data) //0210
+            let keyindex=0
+            for (let key in res.data[0]) {
+              this.ggindexs[key]=res.data[0][key][ggnum[keyindex]]
+              keyindex+=1
+             // let idnum=ggnum[keyindex]
+             // console.log(res.data[0][idnum])
+             // console.log(999999)
+              // for (let s = 0; s < ggnum.length; s++) {
+              //  // if(key==)
+              //   //ggnum.s
+              //   //for(let k=0;k<)
+              //   this.ggindexs[key] = res.data[0][key][ggnum[s]]
+              //   console.log(res.data[0][key][ggnum[s]])
+              // }
+             // console.log(key.index)
+              //console.log(res.data[0][key])
+            }
+            console.log(87)
+            console.log(this.ggindexs)
+            $.ajax({
+              type: "post",
+              url: "selectAllspecifications",
+              data: {
+                product_id: this.getHrefParam("id"),
+                specifications: JSON.stringify(this.ggindexs)
+              },
+              dataType: "json",
+              success: (res) => {
+                console.log(res.data.price)
+                this.moneygg = res.data.price;
+                this.getgoodscont();
+                console.log(123321)
+                this.kccount = res.count
+                console.log(res.count)
+              }
+            });
+          }
+        });
+      },
+      //得到产品
+      getgoodscont() {
+        console.log(8877)
+        console.log("----------------" + this.moneygg)
+        if (this.getHrefParam("id") == "") {
+          //  alert(this.getHrefParam("id"))
+          this.numshow = false
+          this.listcar = false
+          let loc = window.location.href;
+          var loclist = loc.split("=");
+          $.ajax({
+            type: "post",
+            url: "t_trolley/lt_trolleylst",
+            data: {
+              user_id: window.localStorage.getItem("SkyUserId"),
+              page: 0, limit: 100
+            },
+            dataType: "json",
+            success: (res) => {
+              console.log(res.data)
+              if (res.code == 1) {
+                //alert(loclist[1].split(",")[1])
+                for (let j = 0; j < loclist[1].split(",").length; j++) {
+                  for (let i = 0; i < res.data.length; i++) {
+                    //alert(res.data[i].trolley_id)
+                    if (res.data[i].trolley_id == loclist[1].split(",")[j]) {
+                      // alert(res.data[i].trolley_id)
+                      // alert(res.data[i].trolley_id==loclist[1].split(",")[j])
+                      res.data[i].trolley_specifications = JSON.parse(res.data[i].trolley_specifications)
+                      // console.log(res.data[i])
+                      this.goodscont.push(res.data[i])
+                      this.pricebig += res.data[i].number * res.data[i].trolley_price
+                    }
+                  }
+                  // res.data[i].trolley_specifications = JSON.parse(res.data[i].trolley_specifications)
+
+
+                }
+                console.log(this.goodscont)
+                console.log(12366699988852211111)
+                //this.goodscont = res.data;
+                console.log(this.goodscont)
+                this.getExpress()
+                //this.goodscont =res.data;
+              } else {
+                this.$Message.info(res.msg)
+              }
+            }
+          });
+        } else {
+
+          $.ajax({
+            type: "post",
+            url: "/listProductByProductId",
+            data: {productId: this.getHrefParam("id")},
+            dataType: "json",
+            success: (res) => {
+              this.goodscont = res.data
+              this.pricebig = this.getHrefParam("num") * this.moneygg
+              this.orders.id = res.data[0].productId
+              console.log(123)
+              console.log(this.moneygg)
+              $.ajax({
+                type: "post",
+                url: "/t_order/queryh",
+                data: {
+                  id: res.data[0].productId,
+                  zongjia: this.pricebig
+                },
+                dataType: "json",
+                success: (res) => {
+                  console.log(1)
+                  console.log(this.pricebig)
+                  this.discounts = res.count
+                  this.freights = res.data
+                }
+              })
+            }
+          });
+        }
+      },
+      //查询优惠和运费
+      getExpress() {
+        $.ajax({
+          type: "post",
+          url: "t_order/qeryunfeiyouhui",
+          data: {trolley_id: window.location.href.split('=')[1]},
+          dataType: "json",
+          success: (res) => {
+            if (res.code == 1) {
+              this.discounts = res.data
+              this.freights = res.count
+            } else {
+              this.$Message.info(res.msg)
+            }
+          }
+        });
+      },
+      //地址改变
+      mapon(item, id) {
+        this.indexs = item;
+        this.orders.order_mode = id
+      },
+      //修改地址
+      edit(item) {
+        this.formData = item
+        let arr = []
+        arr.push(item.goods_sheng)
+        arr.push(item.goods_shi)
+        arr.push(item.goods_xian)
+        this.addressArr = arr
+        this.newAddress()
+        return
+      },
+      newAddress() {
+        this.editAddress = true
+      },
+      //添加地址													
+      saveAddress(form) {
+        this.formData.user_id = this.userInfo.id
+        this.formData.goods_sheng = this.addressArr[0]
+        this.formData.goods_shi = this.addressArr[1]
+        this.formData.goods_xian = this.addressArr[2]
+        if( !this.formData.goods_ster){
+        	this.formData.goods_ster='2'
+        }
+        console.log(this.formData);
+        this.$refs[form].validate((valid) => {
+          if (valid) {
+            $.ajax({
+              type: "post",
+              url: this.formData.goods_id ? "/t_goods/updateGoods" : "/t_goods/addGoods",
+              data: JSON.stringify(this.formData),
+              contentType: 'application/json',
+              dataType: "json",
+              success: (res) => {
+                //alert(123)
+                if (res.code === 1) {
+                  this.editAddress = false
+                  this.$Message.success(res.msg);
+                  this.closeAddress()
+                  this.getselectGoods()
+                }
+              }
+            });
+          } else {
+            this.$Message.error('Fail!');
+          }
+
+        })
+      },
+      //删除地址
+      dele(goods_id) {
+        this.$Modal.confirm({
+          title: '提示',
+          content: '<p>是否删除</p>',
+          onOk: () => {
+            $.ajax({
+              type: "post",
+              url: "t_goods/deletGoods",
+              data: {goods_id},
+              dataType: "json",
+              success: (res) => {
+                if (res.code === 1) {
+                  this.getselectGoods()
+                }
+              }
+            });
+          },
+          onCancel: () => {
+            this.$Message.info('已取消');
+          }
+        });
+      },
+      //收货地址
+      getselectGoods() {
+        $.ajax({
+          type: "post",
+          url: "/t_goods/selectGoods",
+          data: {id: localStorage.getItem("SkyUserId")},
+          dataType: "json",
+          success: (res) => {
+            if (res.code == 2) {
+              this.show = !this.show
+            }
+            if (res.code == 1) {
+              // this.orders.order_mode = res.data[0].goods_id
+              this.mapList = res.data
+              console.log(9998)
+              console.log(this.mapList)
+
+              this.mapListarr = []
+              this.indexs = 0
+              for (let j = 0; j < this.mapList.length; j++) {
+                if (this.mapList[j].goods_ster == 1) {
+                  //alert(123333)
+                  this.mapListarr.push(this.mapList[j])
+                }
+              }
+              for (let s = 0; s < this.mapList.length; s++) {
+                if (this.mapList[s].goods_ster == 2) {
+                  this.mapListarr.push(this.mapList[s])
+                }
+              }
+              console.log("this.mapList" + 1234567896)
+              console.log(this.mapListarr)
+              this.orders.order_mode = this.mapListarr[0].goods_id
+            }
+          }
+        });
+      },
+      getgoodsList() {
+        $.ajax({
+          type: "post",
+          url: "t_order/Generateorder",
+          dataType: "json",
+          success: (res) => {
+            if (res.code == 1) {
+            }
+          }
+        });
+      },
+      add(nums, price) {
+        //alert(price)
+        if (this.num >= this.kccount) {
+          this.num = this.kccount
+          this.$Message.info('库存不足');
+        } else {
+          this.num = this.num * 1 + 1
+        }
+
+        this.pricebig = price * this.num
+        // alert(this.pricebig)
+        this.orders.order_number = this.num
+        $.ajax({
+          type: "post",
+          url: "/t_order/queryh",
+          data: {
+            id: this.orders.id,
+            zongjia: this.pricebig
+          },
+          dataType: "json",
+          success: (res) => {
+            this.discounts = res.count
+            this.freights = res.data
+          }
+        })
+      },
+      min(nums, price) {
+        if (this.num > 1) {
+          this.num = this.num * 1 - 1
+          this.pricebig = this.num * price
+          this.orders.order_number = this.num
+          $.ajax({
+            type: "post",
+            url: "/t_order/queryh",
+            data: {
+              id: this.orders.id,
+            },
+            dataType: "json",
+            success: (res) => {
+              this.discounts = res.count
+              this.freights = res.data
+            }
+          })
+        }
+      }
+    },
+    mounted() {
+      this.mapon(0)
+      if (this.getHrefParam("id") !== "") {
+        this.getggmoneys()
+      }
+      //
+      this.getselectGoods()
+      this.getgoodscont()
+      //this.getggmoney()
+
+    }
+  }
+</script>
+<script>
+  var userinfo = document.getElementById('shdz');
+  var shdz1 = userinfo.getElementsByClassName('shdz1');
+  for (var i = 0; i < shdz1.length; i++) {
+    shdz1[i].onclick = function (e) {
+      var _index = this.getAttribute('data-index');
+      this.className = 'shdz1 on';
+      for (var j = 0; j < shdz1.length; j++) {
+        if (j !== (_index - 1)) {
+          shdz1[j].className = 'shdz1';
+        }
+      }
+    }
+  }
+
+  function unfold(e, box) {
+    var _box = document.getElementById(box);
+    var child_num = _box.childElementCount;
+    var _boxH = _box.offsetHeight;
+    if (e.getAttribute('class') === 'on') {
+      e.removeAttribute('class');
+      _box.style.height = _boxH / child_num + 'px';
+    } else {
+      e.className = 'on';
+      _box.style.height = child_num * _boxH + 'px';
+    }
+  }
+</script>
+
+<script>
+  var paylist = document.querySelectorAll(".pay-list")
+  for (let i1 = 0; i1 < paylist.length; i1++) {
+    paylist[i1].onclick = function () {
+      for (j = 0; j < paylist.length; j++) {
+        paylist[j].classList.remove("active");
+      }
+      this.classList.add("active");
+
+    }
+  }
+</script>
+
+<div th:replace="/mall/common :: commonFooterjs"></div>
+
+</html>

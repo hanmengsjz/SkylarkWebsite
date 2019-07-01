@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.websit.mapper.ContactUsMapper">
+
+<!--联系我们展示 -->
+    <select id="selectAllContactUsList" resultType="com.websit.entity.ContactUs">
+       SELECT DISTINCT
+                    id,
+                    address ,
+                    phone, 
+                     enterprise_email,
+                     record
+                FROM
+                    t_contact_us
+    </select>
+    
+    <!-- 联系我们展示  分页 -->
+    <select id="selectAllContactUsListPage" resultType="com.websit.entity.ContactUs">
+        SELECT DISTINCT
+                    id,
+                    address ,
+                    phone, 
+                     enterprise_email,
+                     record
+                FROM
+                    t_contact_us
+              order by id
+               DESC
+                      limit #{page},#{limit}  
+    </select>
+    
+    <!--查询联系我们条数数量 -->
+	<select id="findContactUsCount"  resultType="Integer">
+		SELECT COUNT(DISTINCT tb.id) count
+		FROM (select id from t_contact_us
+		<where>
+			<!-- <if test="name != null and name != ''">
+				and z.name like "%"#{name}"%"
+			</if> -->
+		</where>
+		)as tb
+	</select>
+	  <!-- 增加 -->
+	<insert id="saveContactUs" parameterType="com.websit.entity.ContactUs">
+		insert into
+		  t_contact_us(address,phone,enterprise_email,record)
+		values
+		(#{address},#{phone},#{enterprise_email},#{record})
+	</insert>
+	
+	<!-- 修改 -->
+	<update id="updateContactUs" parameterType="com.websit.entity.ContactUs">
+		update t_contact_us
+		<set>
+			<if test="address != null and address != ''">
+				address = #{address},
+			</if>
+			<if test="phone != null and phone != ''">
+				phone = #{phone},
+			</if>
+			<if test="enterprise_email != null and enterprise_email != ''">
+				enterprise_email = #{enterprise_email},
+			</if>
+				<if test="record != null and record != ''">
+				record = #{record}
+			</if>
+		</set>
+		where id= #{id}
+	</update>
+	 <!-- 根据专区id删除 -->
+    <delete id="deleteContactUsById" parameterType="BigInteger">
+		delete
+		   from
+		 t_contact_us
+		   where id=#{id}
+	</delete>
+</mapper>

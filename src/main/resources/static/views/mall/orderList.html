@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <div th:replace="/mall/common  :: commonHeader(订单信息)"></div>
+  <link rel="stylesheet" type="text/css" href="/assets/layui/css/layui.css">
+  <script src="/assets/layui/layui.js" charset="utf-8"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
+  <style>
+    .nav-big-box {
+      display: none !important;
+    }
+
+    .listli {
+      line-height: 2
+    }
+
+    .demo-upload-list {
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      line-height: 60px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #fff;
+      position: relative;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, .2);
+      margin-right: 4px;
+    }
+
+    .demo-upload-list img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .demo-upload-list-cover {
+      display: none;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, .6);
+    }
+
+    .demo-upload-list:hover .demo-upload-list-cover {
+      display: block;
+    }
+
+    .demo-upload-list-cover i {
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      margin: 0 2px;
+    }
+
+    .ivu-upload-list-file {
+      display: inline-block !important;
+      margin-right: 10px
+    }
+
+    .tit {
+      font-size: 16px
+    }
+
+    .right {
+      width: 61%;
+      margin-left: 20px;
+    }
+
+    .productcont {
+      width: 35%;
+      text-align: center;
+      box-shadow: 0px 0px 30px 0 rgba(81, 91, 96, 0.3);
+    }
+
+    .productcont img {
+      display: block;
+      width: 80%;
+      margin: 0 auto
+    }
+
+    .productcont .tit {
+      font-size: 18px;
+      margin: 8px;
+    }
+
+    .productcont .Specifications {
+      font-size: 14px
+    }
+
+    .productcont .mony {
+      font-size: 18px;
+      color: tomato;
+      margin-top: 10px;
+      font-weight: bold
+    }
+
+    .textareas {
+      margin-top: 8px
+    }
+
+    .Rate {
+      margin-bottom: 5px
+    }
+
+    .picture {
+      margin-top: 15px
+    }
+
+    .buttonbox {
+      text-align: center;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .buttons {
+      width: 120px
+    }
+
+    .flexlist {
+      display: inline-block;
+      margin-right: 10px
+    }
+  </style>
+</head>
+<body>
+<div class="main order" id="app">
+  <Modal title="微信" v-model="qrcode" :mask-closable="false" :closable="false">
+    <div style="display: flex">
+      <canvas id="canvas"></canvas>
+      <div style="line-height: 100px">扫描左侧二维码付款</div>
+    </div>
+    <div slot="footer">
+      <i-button type="success" size="large" long @click="goOrder">支付完成点我</i-button>
+    </div>
+  </Modal>
+  <Drawer title="退款" v-model="drawerShow" width="720" :mask-closable="false" :styles="styles">
+    <i-form :model="formItem" :label-width="80">
+      <form-item label="退货原因">
+        <radio-group v-model="formItem.cause_explain">
+          <Radio label="多拍/拍错/不想要">多拍/拍错/不想要</Radio>
+          <Radio label="缺货">缺货</Radio>
+        </radio-group>
+      </form-item>
+      <form-item label="退货类别">
+        <radio-group v-model="formItem.cause_type">
+          <Radio label="仅退款">仅退款</Radio>
+          <Radio label="退货退款">退货退款</Radio>
+        </radio-group>
+      </form-item>
+      <form-item label="退款说明">
+        <i-input v-model="formItem.sales_cause" type="textarea" :autosize="{minRows: 2,maxRows: 5}"></i-input>
+      </form-item>
+      <form-item label="上传图片">
+        <Upload action="">
+          <i-button icon="ios-cloud-upload-outline">上传图片</i-button>
+        </Upload>
+      </form-item>
+    </i-form>
+    <div
+      style="width: 100%;position: absolute;bottom: 0;left: 0;border-top: 1px solid #e8e8e8; padding: 10px 16px;text-align: right;background: #fff;">
+      <i-button type="primary" @click="submitReturn">提交</i-button>
+    </div>
+  </Drawer>
+  <Modal title="评价" v-model="evaluates" width="600">
+    <div style="display: flex">
+      <div class="productcont" v-for="(goods,index) in goodsData">
+        <img :src="goods.image" alt="">
+        <p class="tit">{{goods.productName}}</p>
+        <p class="Specifications">规格：{{goods.specifications}}</p>
+        <p class="mony">¥{{goods.price}}</p>
+      </div>
+      <div class="right">
+        <div class="Rate">
+          <span class="tit">商品评价：</span>
+          <Rate show-text v-model="valueText"/>
+        </div>
+        <div class="textareasbox">
+          <span class="tit">评价晒单：</span>
+          <i-input class="textareas" v-model="value6" type="textarea"
+                   :rows="6" placeholder="分享体验心得..."/>
+        </div>
+        <div class="picture">
+          <div>
+            <Upload ref="upload" :before-upload="handleUpload"
+                    :format="['jpg','jpeg','png']"
+                    action="localhost:8080/t_review/insertReview">
+              <i-button
+                icon="ios-cloud-upload-outline">上传图片
+              </i-button>
+            </Upload>
+            <div v-if="file !== null" v-for="item in file" class="flexlist">{{item.name}}</div>
+          </div>
+          <div class="buttonbox">
+            <i-button type="error" @click="uploads" class="buttons">发表</i-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div slot="footer"></div>
+  </Modal>
+  <div th:replace="/mall/common :: commonNav"></div>
+  <div class="wrap main-wrap">
+    <div class="cont-nav">
+      <div class="cont-top">会员中心</div>
+      <ul class="cont-top-one">
+        <li>我的信息</li>
+        <li><a href="">我的订单</a></li>
+      </ul>
+    </div>
+    <div class="main-rg">
+      <div class="rg-title">我的订单</div>
+      <div class="rg-p1">
+        <ul>
+          <li class="list-nav" @click="toggleActive(0,0)" :class="{active : active == 0}">待付款({{dfk}})</li>
+          <li class="list-nav" @click="toggleActive(1,1)" :class="{active : active == 1}">待发货({{daf}})</li>
+          <li class="list-nav" @click="toggleActive(2,2)" :class="{active : active == 2}">待收货({{dsh}})</li>
+          <li class="list-nav" @click="toggleActive(3,3)" :class="{active : active == 3}">待评价({{ysh}})</li>
+          <li class="list-nav" @click="toggleActive(5,4)" :class="{active : active == 4}">退货/退款({{sales}})</li>
+          <li class="list-nav" @click="toggleActive('',5)" :class="{active : active == 5}">全部({{quantum}})</li>
+        </ul>
+      </div>
+      <div class="rg-p2">
+        <div v-if="active==0" class="rg-p2list">
+          <!--一块订单信息开始-->
+          <div class="rg-p2-order">
+            <div class="rg-p2-bt">
+              <div class="rg-p2-btn">
+                <button>系统确认中</button>
+              </div>
+            </div>
+            <div class="rg-p2-title">
+              <div class="flex spxx-title">
+                <div class="li">品名</div>
+                <div class="li">规格</div>
+                <div class="li">购买数量</div>
+                <div class="li">单价</div>
+                <div class="li">下单时间</div>
+                <div class="li">订单金额</div>
+                <!-- <div class="li">操作</div> -->
+              </div>
+            </div>
+            <p v-if="dfk==0" class="nullcont">暂无信息</p>
+            <div class="rg-p2-data" v-for="(item,index) in orderListPaid">
+              <div class="rg-p2-list" v-for="(item_c,index_c) in item.shping">
+                <div class="spxx-conttop flex">
+                  <p class="lis">订单编号：{{item.order_no}}</p>
+
+                  <div class="li">
+                    <button @click=clear(item.order_id)>取消订单</button>
+                    <a class="detail" :href="'/orderDetails?id='+item.order_id">订单详情</a>
+                    <dropdown @on-click="payment(item.order_no,item.order_payable,$event)">
+                      <a href="javascript:void(0)" class="pay_btn">
+                        立即付款
+                        <icon type="ios-arrow-down"></icon>
+                      </a>
+                      <dropdown-menu slot="list">
+                        <dropdown-item name="zfb">支付宝支付</dropdown-item>
+                        <dropdown-item name="wx">微信支付</dropdown-item>
+                      </dropdown-menu>
+                    </dropdown>
+                  </div>
+                </div>
+                <div class="flex spxx-cont">
+                  <div class="li"><img :src="item_c.image" alt="">
+                    <p>{{item_c.productName}}</p></div>
+                  <div class="li">
+                    <p class="listli" v-for="(item_s,key_s,index_s) in item_c.shoping_specifications">
+                      <!--                      {{item_s}}-->
+                      <!--  {{key_s.split('"')[0]}}:{{item_s.split('"')[0]}} -->
+                      {{key_s.split('"/"')[0]}}:{{item_s.split('"/""')[0]}}
+                    </p>
+                    <!--                    <p>{{item_c.shoping_specifications}}</p>-->
+                  </div>
+                  <div class="li"><p>{{item.order_number}}</p></div>
+                  <div class="li">¥{{item_c.price}}</div>
+
+                  <div class="li">{{formatData(item.order_time)}}</div>
+                  <div class="li">¥{{item_c.zongjia}}</div>
+                </div>
+              </div>
+            </div>
+            <!--     <Page :total="dfk" size="small" @on-change="pageChange" /> -->
+          </div>
+        </div>
+        <div v-if="active==1" class="rg-p2list">
+          <!--一块订单信息开始-->
+          <div class="rg-p2-order">
+            <div class="rg-p2-bt">
+              <div class="rg-p2-btn">
+                <button>系统确认中</button>
+              </div>
+            </div>
+            <div class="rg-p2-title">
+              <div class="flex spxx-title">
+                <div class="li">品名</div>
+                <div class="li">规格</div>
+                <div class="li">购买数量</div>
+                <div class="li">单价</div>
+                <div class="li">下单时间</div>
+                <div class="li">订单金额</div>
+              </div>
+            </div>
+            <p v-if="daf==0" class="nullcont">暂无信息</p>
+            <div class="rg-p2-data" v-for="(item,index) in orderListPaid">
+              <div class="rg-p2-list" v-for="(item_c,index_c) in item.shping">
+                <div class="spxx-conttop flex">
+                  <p class="lis">订单编号：{{item.order_no}}</p>
+                  <div class="li">
+                    <a class="detail" :href="'/orderDetails?id='+item.order_id">订单详情</a>
+                    <button class="pay_btn" @click="shipment()">提醒发货</button>
+                  </div>
+                </div>
+                <div class="flex spxx-cont">
+                  <div class="li"><img :src="item_c.image" alt="">
+                    <p>{{item_c.brand}}</p></div>
+                  <div class="li">
+                    <p class="listli" v-for="(item_s,key_s,index_s) in item_c.shoping_specifications">
+                      <!--                      {{item_s}}-->
+                      <!--  {{key_s.split('"')[0]}}:{{item_s.split('"')[0]}} -->
+                      {{key_s.split('"/"')[0]}}:{{item_s.split('"/""')[0]}}
+                    </p>
+                    <!--                    <p>{{item_c.specifications}}</p>-->
+                  </div>
+                  <div class="li"><p>{{item.order_number}}</p></div>
+                  <div class="li">¥{{item_c.price}}</div>
+
+                  <div class="li">{{formatData(item.order_time)}}</div>
+
+
+                  <div class="li">¥{{item_c.zongjia}}</div>
+
+
+                  <!-- <div class="li"><button class="pay_btn">提醒发货</button></div> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-if="active==2" class="rg-p2list">
+          <!--一块订单信息开始-->
+          <div class="rg-p2-order">
+            <div class="rg-p2-bt">
+              <div class="rg-p2-btn">
+                <button>物流运输中</button>
+              </div>
+            </div>
+            <div class="rg-p2-title">
+              <div class="flex spxx-title">
+                <div class="li">品名</div>
+                <div class="li">规格</div>
+                <div class="li">购买数量</div>
+                <div class="li">单价</div>
+                <div class="li">下单时间</div>
+                <div class="li">订单金额</div>
+              </div>
+            </div>
+            <p v-if="dsh==0" class="nullcont">暂无信息</p>
+            <div class="rg-p2-data" v-for="(item,index) in orderListPaid">
+              <div class="rg-p2-list" v-for="(item_c,index_c) in item.shping">
+                <div class="spxx-conttop flex">
+                  <p class="lis">订单编号：{{item.order_no}}</p>
+                  <div class="li">
+                    <a class="detail" :href="'/orderDetails?id='+item.order_id">订单详情</a>
+                    <button @click="logistics(item.order_shouhuo_id)">查看物流</button>
+                    <button class="pay_btn" @click="okOrder(item.order_id)">确认收货</button>
+                  </div>
+                </div>
+                <div class="flex spxx-cont">
+                  <div class="li"><img :src="item_c.image" alt="">
+                    <p>{{item_c.brand}}</p></div>
+                  <div class="li">
+                    <p class="listli" v-for="(item_s,key_s,index_s) in item_c.shoping_specifications">
+                      <!--                      {{item_s}}-->
+                      <!--  {{key_s.split('"')[0]}}:{{item_s.split('"')[0]}} -->
+                      {{key_s.split('"/"')[0]}}:{{item_s.split('"/""')[0]}}
+                    </p>
+                    <!--                    <p>{{item_c.specifications}}</p>-->
+                  </div>
+                  <div class="li"><p>{{item.order_number}}</p></div>
+                  <div class="li">¥{{item_c.price}}</div>
+
+                  <div class="li">{{formatData(item.order_time)}}</div>
+                  <div class="li">¥{{item_c.zongjia}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-if="active==3" class="rg-p2list">
+          <!--一块订单信息开始-->
+          <div class="rg-p2-order">
+            <div class="rg-p2-bt">
+              <div class="rg-p2-btn">
+                <button>已完成</button>
+              </div>
+            </div>
+            <div class="rg-p2-title">
+              <div class="flex spxx-title">
+                <div class="li">品名</div>
+                <div class="li">规格</div>
+                <div class="li">购买数量</div>
+                <div class="li">单价</div>
+                <div class="li">下单时间</div>
+                <div class="li">订单金额</div>
+              </div>
+            </div>
+            <p v-if="ysh==0" class="nullcont">暂无信息</p>
+            <div class="rg-p2-data" v-for="(item,index) in orderListPaid">
+              <div class="rg-p2-list" v-for="(item_c,index_c) in item.shping">
+                <div class="spxx-conttop flex">
+                  <p class="lis">订单编号：{{item.order_no}}</p>
+                  <div class="li">
+                    <button @click="evaluate(item_c.productId,item_c.shoping_id,item.order_no)">评价</button>
+                    <button class="pay_btn" @click="returnGoods(item.order_id)">申请退款</button>
+                  </div>
+                </div>
+                <div class="flex spxx-cont">
+                  <div class="li"><img :src="item_c.image" alt="">
+                    <p>{{item_c.brand}}</p></div>
+                  <div class="li">
+                    <p class="listli" v-for="(item_s,key_s,index_s) in item_c.shoping_specifications">
+                      {{key_s.split('"/"')[0]}}:{{item_s.split('"/""')[0]}}
+                    </p>
+                    <p>{{item_c.specifications}}</p>
+                  </div>
+                  <div class="li"><p>{{item.order_number}}</p></div>
+                  <div class="li">¥{{item_c.price}}</div>
+                  <div class="li">{{formatData(item.order_time)}}</div>
+                  <div class="li">¥{{item_c.zongjia}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-if="active==4" class="rg-p2list">
+          <!--一块订单信息开始-->
+          <div class="rg-p2-order">
+            <div class="rg-p2-bt">
+            </div>
+            <div class="rg-p2-title">
+              <div class="flex spxx-title">
+                <div class="li">品名</div>
+                <div class="li">规格</div>
+                <div class="li">购买数量</div>
+                <div class="li">单价</div>
+                <div class="li">下单时间</div>
+                <div class="li">订单金额</div>
+                <div class="li">状态</div>
+              </div>
+            </div>
+            <p v-if="sales==0" class="nullcont">暂无信息</p>
+            <div class="rg-p2-data" v-for="(item,index) in orderListPaid">
+              <div class="rg-p2-list" v-for="(item_c,index_c) in item.shping">
+                <div class="spxx-conttop flex">
+                  <p class="lis">订单编号：{{item.order_no}}</p>
+                </div>
+                <div class="flex spxx-cont">
+                  <div class="li"><img :src="item_c.image" alt="">
+                    <p>{{item_c.brand}}</p></div>
+                  <div class="li">
+                    <p class="listli" v-for="(item_s,key_s,index_s) in item_c.shoping_specifications">
+                      <!--                      {{item_s}}-->
+                      <!-- {{key_s.split('"')[0]}}:{{item_s.split('"')[0]}} -->
+                      {{key_s.split('"/"')[0]}}:{{item_s.split('"/""')[0]}}
+                    </p>
+                    <!--                    <p>{{item_c.specifications}}</p>-->
+                  </div>
+                  <div class="li"><p>{{item.order_number}}</p></div>
+                  <div class="li">¥{{item_c.price}}</div>
+
+                  <div class="li">{{formatData(item.order_time)}}</div>
+                  <div class="li">¥{{item_c.zongjia}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-if="active==5" class="rg-p2list">
+          <!--一块订单信息开始-->
+          <div class="rg-p2-order">
+            <div class="rg-p2-bt">
+              <div class="rg-p2-btn">
+                <button>全部</button>
+              </div>
+            </div>
+            <div class="rg-p2-title">
+              <div class="flex spxx-title">
+                <div class="li">品名</div>
+                <div class="li">规格</div>
+                <div class="li">购买数量</div>
+                <div class="li">单价</div>
+                <div class="li">下单时间</div>
+                <div class="li">订单金额</div>
+                <div class="li">操作</div>
+              </div>
+            </div>
+            <p v-if="quantum==0" class="nullcont">暂无信息</p>
+            <div class="rg-p2-data" v-for="(item,index) in orderListPaid">
+              <div class="rg-p2-list" v-for="(item_c,index_c) in item.shping">
+                <div class="flex spxx-cont">
+                  <div class="li"><img :src="item_c.image" alt="">
+                    <p>{{item_c.brand}}</p></div>
+                  <div class="li">
+                    <p class="listli" v-for="(item_s,key_s,index_s) in item_c.shoping_specifications">
+                      <!--                      {{item_s}}-->
+                      <!--  {{key_s.split('"')[0]}}:{{item_s.split('"')[0]}} -->
+                      {{key_s.split('"/"')[0]}}:{{item_s.split('"/""')[0]}}
+                    </p>
+                    <!--                    <p>{{item_c.specifications}}</p>-->
+                  </div>
+                  <div class="li"><p>{{item.order_number}}</p></div>
+                  <div class="li">¥{{item_c.price}}</div>
+                  <div class="li">{{formatData(item.order_time)}}</div>
+                  <div class="li">¥{{item_c.zongjia}}</div>
+                  <div class="li">
+                    <button v-if='item.order_state==-1'>取消订单</button>
+                    <button v-if='item.order_state==0'>待付款</button>
+                    <button v-if='item.order_state==1'>待发货</button>
+                    <button v-if='item.order_state==2'>待收货</button>
+                    <button v-if='item.order_state>=3'>已完成</button>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div th:replace="/mall/common :: commonFooter"></div>
+</div>
+</body>
+<script>
+  const mixin = {
+    data() {
+      return {
+        classData: [],
+        active: 0,
+        orderCount: {},
+        orderListPaid: [],
+        notDelivered: [],
+        daf: null,
+        dfk: null,
+        dsh: null,
+        ysh: null,
+        sales: null,
+        quantum: null,
+        goodsid: null,
+        orderid: null,
+        shoping_id: null,
+        qrcode: false,
+        drawerShow: false,
+        styles: {
+          height: 'calc(100% - 55px)',
+          overflow: 'auto',
+          paddingBottom: '53px',
+          position: 'static'
+        },
+        formItem: {order_state: 5},
+        goodsData: null,
+        evaluates: false,
+        valueText: 5,
+        value6: '',
+        file: [],
+        files: [],
+        loadingStatus: false,
+      }
+    },
+    methods: {
+      pageChange(num, num1) {
+        return JSON.stringify(data)
+      },
+      submitReturn() {
+        $.ajax({
+          type: "post",
+          url: "/t_order/ordercan",
+          data: this.formItem,
+          dataType: "json",
+          success: (res) => {
+            if (res.code == 1) {
+              alert(res.msg)
+              this.drawerShow = false
+              this.formItem = {order_state: 5}
+            } else {
+              alert(res.msg)
+            }
+          }
+        });
+      },
+      returnGoods(order) {
+        this.formItem.order_id = order
+        this.drawerShow = true
+      },
+      useqrcode(canvasData) {
+        let canvas = document.getElementById('canvas')
+        QRCode.toCanvas(canvas, canvasData, function (error) {
+        })
+      },
+      goOrder() {
+        window.location.href = '/orderList'
+      },
+      payment(order, money, type) {
+        if (type == 'zfb') {
+          window.location.href = "/alipay/pcPay?order_no=" + order + "&order_money=" + money
+        } else if (type == 'wx') {
+          $.ajax({
+            type: "get",
+            url: "/wXpay_pc",
+            data: {out_trade_no: order, total_money: money * 100},
+            contentType: 'application/json',
+            dataType: "json",
+            success: (res) => {
+              if (res.success) {
+                this.qrcode = true
+                this.useqrcode(res.data.code_url)
+              } else {
+
+              }
+            }
+          });
+        }
+      },
+      evaluate(goodsid, shoping_id, orderid) {
+        this.goodsid = goodsid;
+        this.orderid = orderid;
+        this.shoping_id = shoping_id
+        this.evaluates = true
+        $.ajax({
+          type: "post",
+          url: "/listProductByProductId",
+          dataType: "json",
+          data: {productId: goodsid},
+          success: (res) => {
+            console.log(res.data)
+            this.goodsData = res.data
+          }
+        });
+      },
+      handleUpload(file) {
+        if (this.file.length < 3) {
+          this.file.push(file)
+          return false;
+        } else {
+          this.$Message.info('最多传三张图片');
+          return false
+        }
+      },
+      uploads() {
+        if (this.value6 != "") {
+          var formData = new FormData()
+          for (let i = 0; i < this.file.length; i++) {
+            formData.append('pic', this.file[i])
+          }
+          formData.append('user_id', localStorage.getItem("SkyUserId"))
+          formData.append('review_content', this.value6)
+          formData.append('appraise', this.valueText)
+          formData.append('product_id', this.goodsid)
+          formData.append('shopping_id', this.shoping_id)
+          formData.append('order_id', this.orderid)
+          formData.append('order_no', this.orderid)
+          $.ajax({
+            type: "post",
+            url: "/t_review/insertReview",
+            dataType: "json",
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: formData,
+            success: (res) => {
+              if (res.code === 1) {
+                this.$Message.info('评论成功！');
+                this.evaluates = false
+              }
+            }
+          });
+        } else {
+          this.$Message.info('评价内容不能为空！');
+        }
+      },
+      okOrder(ids) {
+        $.ajax({
+          type: "post",
+          url: "t_order/ordercan/",
+          data: {
+            order_id: ids,
+            order_state: 3,
+          },
+          dataType: "json",
+          success: (res) => {
+            this.getOrder(2)
+            this.getOrder(3)
+          }
+        });
+      },
+      //提醒发货
+      shipment() {
+        this.$Message.info('已提醒商户');
+      },
+      //取消订单
+      clear(ids) {
+        this.$Modal.confirm({
+          title: '提示',
+          content: '<p>是否取消订单</p>',
+          onOk: () => {
+            $.ajax({
+              type: "post",
+              url: "t_order/ordercan/",
+              data: {
+                order_id: ids,
+                order_state: -1,
+              },
+              dataType: "json",
+              success: (res) => {
+                this.getOrder(0)
+              }
+            });
+          },
+          onCancel: () => {
+            this.$Message.info('已取消');
+          }
+        });
+      },
+      logistics(logistics) {
+        window.location.href = "/logistics?log=" + logistics;
+      },
+      getOrderCount() {
+        $.ajax({
+          type: "post",
+          url: "/t_order/qercxjb",
+          data: {
+            user_id: localStorage.getItem("SkyUserId"),
+          },
+          dataType: "json",
+          success: (res) => {
+            this.daf = res.data.daf
+            this.dfk = res.data.dfk
+            this.dsh = res.data.dsh
+            this.ysh = res.data.ysh
+            this.quantum = res.data.quantum
+            this.sales = res.data.sales
+          }
+        });
+      },
+      getOrder(num) {
+        $.ajax({
+          type: "post",
+          url: "/t_order/orderlist",
+          data: {
+            user_id: localStorage.getItem("SkyUserId"),
+            order_state: num,
+            page: 1,
+            limit: 100
+          },
+          dataType: "json",
+          success: (res) => {
+            this.userInfo.name
+            if (res.code == 1) {
+
+              for (let j = 0; j < res.data.length; j++) {
+                for (let s = 0; s < res.data[j].shping.length; s++) {
+                  console.log(res.data[j].shping[s].shoping_specifications)
+                  res.data[j].shping[s].shoping_specifications = JSON.parse(res.data[j].shping[s].shoping_specifications)
+                }
+              }
+              this.orderListPaid = res.data
+            }
+          }
+        });
+      },
+      toggleActive(nums, index) {
+        this.active = index;
+        $.ajax({
+          type: "post",
+          url: "/t_order/orderlist",
+          data: {
+            user_id: localStorage.getItem("SkyUserId"),
+            order_state: nums,
+            page: 1,
+            limit: 10
+          },
+          dataType: "json",
+          success: (res) => {
+            if (res.code == 1) {
+              if (nums == 5) {
+                for (let i = 0; i < res.data.length; i++) {
+                  if (res.data[i].order_state == 5) {
+                    res.data[i].order_state = '退货审核中'
+                  } else if (res.data[i].order_state == 6) {
+                    res.data[i].order_state = '退货审核通过'
+                  } else if (res.data[i].order_state == 7) {
+                    res.data[i].order_state = '退货审核不通过'
+                  } else if (res.data[i].order_state == 8) {
+                    res.data[i].order_state = '退货完成'
+                  }
+                }
+              }
+              for (let j = 0; j < res.data.length; j++) {
+                for (let s = 0; s < res.data[j].shping.length; s++) {
+                  console.log(res.data[j].shping[s].shoping_specifications)
+                  res.data[j].shping[s].shoping_specifications = JSON.parse(res.data[j].shping[s].shoping_specifications)
+                }
+              }
+              this.orderListPaid = res.data
+              // this.orderListPaid = res.data
+            }
+          }
+        });
+      }
+    },
+    mounted() {
+      this.getOrder(0)
+      this.getOrderCount()
+    }
+  }
+</script>
+<div th:replace="/mall/common :: commonFooterjs"></div>
+</html>

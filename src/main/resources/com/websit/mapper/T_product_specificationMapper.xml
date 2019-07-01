@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+	namespace="com.websit.mapper.T_product_specificationMapper">
+
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap"
+		type="com.websit.entity.T_product_specification">
+		<id column="id" property="id" />
+		<result column="product_id" property="product_id" />
+		<result column="specificationName" property="specificationName" />
+		<result column="cost_price" property="cost_price" />
+		<result column="discount_price" property="discount_price" />
+		<result column="price" property="price" />
+	</resultMap>
+
+	<!-- 查询 -->
+	<select id="selectAllspecification"
+		resultType="com.websit.entity.T_product_specification"
+		parameterType="com.websit.entity.T_product_specification">
+
+		select 
+		product_id,
+		specificationName,
+		cost_price,
+		discount_price,
+		price,
+		t_spectId
+		from 
+		t_product_specification 
+		where 
+		specificationName=#{specificationName} 
+		and product_id=#{product_id}
+	</select>
+		<!-- 查询商品的价格 -->
+	<select id="selectlstspecification" resultType="com.websit.entity.T_product_specification">
+
+		select  *  from t_product_specification where product_id=#{product_id}
+	</select>
+
+ <!--根据id删除商品规格-->
+    <delete id="deleteProductSpecificationById" parameterType="BigInteger">
+		delete
+		   from
+		t_product_specification
+		   where id=#{id}
+	</delete>
+ <!-- 修改商商品规格  -->
+	<update id="updateProductSpecification" parameterType="com.websit.entity.T_product_specification">
+		update  t_product_specification
+		<set>
+			<if test="specificationName != null and specificationName != ''">
+				specificationName = #{specificationName},
+			</if>
+			<if test="cost_price != null and cost_price != ''">
+				cost_price = #{cost_price},
+			</if>
+			<if test="discount_price != null and discount_price != ''">
+				discount_price = #{discount_price},
+			</if>
+				<if test="price != null and price != ''">
+				price = #{price}
+			</if>
+		</set>
+		where id= #{id}
+	</update>
+
+</mapper>

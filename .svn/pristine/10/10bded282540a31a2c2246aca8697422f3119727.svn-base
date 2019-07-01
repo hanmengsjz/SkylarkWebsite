@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/assets/css/bbs.css">
+  <div th:replace="/home/common :: commonHeader(云阙论坛)"></div>
+  <script src="//lib.baomitu.com/wangEditor/3.1.1/wangEditor.js"></script>
+</head>
+<body>
+
+<div id="app">
+  <div class="banner">
+    <div th:replace="/home/common :: commonNav"></div>
+    <img src="/assets/image/bbs/banner.png" alt="">
+  </div>
+  <div class="bbsPost">
+    <div class="home">
+      <a :href="'/forum?id='+post.id" class="head"><img :src="post.image" alt=""></a>
+      <a :href="'/forum?id='+post.id">{{post.plate_name}}</a>
+    </div>
+    <div class="caption">{{post.title}}</div>
+    <div class="postMain">
+      <div class="author">
+        <a href="" class="head"><img :src="post.avatar" alt=""></a>
+        <a href="" class="name">{{post.name}}</a>
+      </div>
+      <div class="reply">
+        <div class="replyMain" v-html="post.context"></div>
+        <div class="replyInfo"><a href="" @click.prevent="reply" style="margin: 0 10px">回复</a><span>1楼 {{post.create_time}}</span>
+        </div>
+      </div>
+    </div>
+    <template v-for="(item,index) in post.map">
+      <div class="postMain">
+        <div class="author">
+          <a :href="'/space?id='+item.user_id" class="head"><img :src="item.image" alt=""></a>
+          <a :href="'/space?id='+item.user_id" class="name">{{item.nickname}}</a>
+        </div>
+        <div class="reply">
+          <div class="replyMain" v-html="item.comment"></div>
+          <div class="replyInfo"><a href="" @click.prevent="reply" style="margin: 0 10px">回复</a><span>{{index+2}}楼 {{item.create_time}}</span>
+          </div>
+          <div class="replyToReplyList" :class="{replyToReplyHide : show}">
+            <div class="replyToReplyBox">
+              <div class="replyToReplyHead">
+                <img src="http://tb.himg.baidu.com/sys/portrait/item/5783e686b8e7b6812d60" alt="">
+              </div>
+              <div class="replyToReplyInfo">
+                <a href="">叫爸爸:</a><span> 说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你</span>
+              </div>
+            </div>
+            <div class="replyToReplyBox">
+              <div class="replyToReplyHead">
+                <img src="http://tb.himg.baidu.com/sys/portrait/item/5783e686b8e7b6812d60" alt="">
+              </div>
+              <div class="replyToReplyInfo">
+                <a href="">叫爸爸:</a><span> 说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你</span>
+              </div>
+            </div>
+            <div class="replyToReplyBox">
+              <div class="replyToReplyHead">
+                <img src="http://tb.himg.baidu.com/sys/portrait/item/5783e686b8e7b6812d60" alt="">
+              </div>
+              <div class="replyToReplyInfo">
+                <a href="">叫爸爸:</a><span> 说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你就信啥说啥你</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+    <div class="pageBox">
+      <Page :total="post.map.length" show-elevator size="small" prev-text="上一页" next-text="下一页"/>
+    </div>
+    <div class="editor">
+      <p class="info">发表回复</p>
+      <div ref="editor" style="text-align:left"></div>
+      <i-button class="sub" type="primary" @click="getContent">提交</i-button>
+    </div>
+  </div>
+  <div th:replace="/home/common :: commonFooter"></div>
+</div>
+
+<script>
+  const mixin = {
+    data() {
+      return {
+        show: false,
+        post: [],
+        editorContent: ''
+      }
+    },
+    methods: {
+      reply() {
+        this.show = !this.show
+        console.log('----')
+      },
+      /* 获取帖子*/
+      getPost() {
+        $.ajax({
+          type: "post",
+          url: "/t_reply/querylist",
+          dataType: "json",
+          data: {
+            id: this.getHrefParam('id'),
+            page: 1,
+            limit: 10
+          },
+          success: (res) => {
+            console.log(res)
+            if (res.code == 1) {
+              res.data[0].create_time = this.timeFormat(res.data[0].create_time)
+              for (let i = 0; i < res.data[0].map.length; i++) {
+                res.data[0].map[i].create_time = this.timeFormat(res.data[0].map[i].create_time)
+              }
+              this.post = res.data[0]
+            }
+          }
+        });
+      },
+      /*提交回复*/
+      getContent() {
+        $.ajax({
+          type: "post",
+          url: "/t_comment/addt_comment",
+          dataType: "json",
+          contentType: 'application/json',
+          data: JSON.stringify({
+            comment: this.editorContent,
+            posting_id: this.getHrefParam('id'),
+            user_id: 21
+          }),
+          success: (res) => {
+            console.log(res)
+          }
+        });
+      }
+    },
+    mounted() {
+      this.getPost()
+      /*注册编辑器*/
+      let E = window.wangEditor
+      let editor = new E(this.$refs.editor)
+      // 自定义菜单配置
+      editor.customConfig.menus = [
+        'head',  // 标题
+        'bold',  // 粗体
+        'fontSize',  // 字号
+        'fontName',  // 字体
+        'italic',  // 斜体
+        'underline',  // 下划线
+        'strikeThrough',  // 删除线
+        'foreColor',  // 文字颜色
+        'backColor',  // 背景颜色
+        'link',  // 插入链接
+        'list',  // 列表
+        'justify',  // 对齐方式
+        'quote',  // 引用
+        'emoticon',  // 表情
+        'image',  // 插入图片
+        'table',  // 表格
+        'code',  // 插入代码
+        'undo',  // 撤销
+        'redo'  // 重复
+      ]
+      editor.customConfig.onchange = (html) => {
+        this.editorContent = html
+      }
+      editor.customConfig.uploadImgShowBase64 = true   // 使用 base64 保存图片
+      editor.customConfig.uploadImgMaxSize = 2 * 1024 * 1024 //上传图片大小
+      editor.customConfig.customAlert = function (info) {
+        // info 是需要提示的内容
+        alert('自定义提示：' + info)
+      }
+      editor.create()
+    }
+  }
+</script>
+<div th:replace="/home/common :: commonFooterjs"></div>
+</body>
+</html>

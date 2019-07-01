@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="commonHeader(title)">
+  <title th:text="${title}"></title>
+  <meta name="referrer" content="no-referrer">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/iview@3/dist/iview.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iview@3/dist/styles/iview.min.css">
+  <link rel="stylesheet" type="text/css" href="/assets/css/cont.css">
+  <link rel="stylesheet" type="text/css" href="/assets/css/mallreset.css">
+  <script src="/assets/js/header.js"></script>
+  <style>
+    .input-bigbox {
+      font-size: 12px;
+    }
+
+    .ivu-input-wrapper {
+      width: 100% !important
+    }
+
+    .ivu-btn-error {
+      position: relative;
+      top: -10px;
+      left: -3px;
+    }
+
+    .head-topleft span {
+      cursor: pointer;
+    }
+
+    .ivu-input-search, .ivu-input-search:hover {
+      background: #e60012 !important;
+      border-color: #e60012 !important;
+    }
+
+    .ivu-input:focus {
+      border-color: #e60012;
+    }
+
+    .ivu-input-with-search:hover .ivu-input {
+      border-color: #e60012;
+    }
+
+    .nav_box-topright {
+      width: 17%
+    }
+  </style>
+</head>
+
+<body>
+<div th:fragment="commonNav">
+  <back-top></back-top>
+  <div class="head">
+    <div class="head-top">
+      <div class="wrap">
+        <div class="head-topleft">
+          <span>{{userInfo.name}} </span>
+          欢迎光临本店!&nbsp&nbsp&nbsp
+          <span v-if="userInfo.name===null">
+              <a href="/toLogin?type=login" class="head-topa active">请登录</a>
+              <a href="/toLogin?type=reg" class="head-topa">免费注册</a>
+            </span>
+          <span v-if="userInfo.name!=null" @click="modal1 = true">退出</span>
+          <Modal
+                  v-model="modal1"
+                  title="提示"
+                  @on-ok="ok"
+                  @on-cancel="cancel">
+            <p>确认退出</p>
+          </Modal>
+        </div>
+        <div class="head-topright">
+          <a href="/" class="head-topa"><img src="" alt="">返回主站</a>
+          <a @click="getOrderlistss()" class="head-topa"><img src="" alt="">个人中心</a>
+          <a @click="getCars()" class="head-topa active"><img src="/assets/image/mall/public/spcar.png" alt=""
+                                                              class="ico">购物车</a>
+        </div>
+        <div class="clear"></div>
+      </div>
+    </div>
+    <div class="nav_box-top">
+      <div class=" wrap">
+        <a href="/mall" class="logo">
+          <img src="/assets/image/mall/public/logo1.png" alt="">
+        </a>
+        <div class="search-box">
+          <i-input v-model="searchcont" search enter-button="搜索" placeholder="搜索 " @on-search="goSearch"/>
+        </div>
+        <div class="nav_box-topright flex">
+          <img src="/assets/image/mall/public/1.png" alt="" class="topimg">
+          <img src="/assets/image/mall/public/2.png" alt="" class="topimg">
+          <img src="/assets/image/mall/public/3.png" alt="" class="topimg">
+        </div>
+        <div class="clear"></div>
+      </div>
+    </div>
+    <div class="nav-big-box wrap">
+      <div class="nav-big-box-top wrap">
+        <span class="navli">全部分类</span>
+      </div>
+      <div class="wrap">
+        <div class="nav-span">
+          <ul class="nav-ul">
+            <li v-for="(item,key,index) in classData" class="nav-ullibox"><a href="" class="nav-ulli"><img
+                    src="/assets/image/mall/nav1.png" alt=""><span>{{key}}</span></a>
+              <div class="nav-bigbox">
+                <div class="inner">
+                  <a v-for="(item_c,index) in classData[key]"
+                     :href="'/goodList?id='+item_c.id+'&class_one='+key+'&class_two='+item_c.name"
+                     class="navs">{{item_c.name}}</a>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="foot" th:fragment="commonFooter">
+  <div class="foot-top">
+    <div class="wrap">
+      <div class="foottop-cont"><img src="/assets/image/mall/public/quality.png" alt=""><span
+              class="foottit">品质保证</span></div>
+      <div class="foottop-cont"><img src="/assets/image/mall/public/real.png" alt=""><span class="foottit">正品货源</span>
+      </div>
+      <div class="foottop-cont"><img src="/assets/image/mall/public/true.png" alt=""><span class="foottit">真实描述</span>
+      </div>
+      <div class="foottop-cont"><img src="/assets/image/mall/public/alive.png" alt=""><span
+              class="foottit">闪电发货</span>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="foot-cont">
+      <ul v-for="(item,index) in footList" class="foot-ul">
+        <li>{{item.t}}</li>
+        <template v-for="(item_c,index_c) in item.c">
+          <li class="flltul-li"><a>{{item_c}}</a></li>
+        </template>
+      </ul>
+    </div>
+    <p class="foot-bot">© 2005-2018 云阙商城 版权所有，并保留所有权利。</p>
+  </div>
+</div>
+
+<div th:fragment="commonFooterjs">
+  <script>
+    let vm = new Vue({
+      el: '#app',
+      mixins: [mixin],
+      data() {
+        return {
+          modal1: false,
+          userInfo: {
+            name: null,
+            id: null
+          },
+          searchcont: "",
+          classData: [],
+          footList: [
+            {t: '会员中心', c: ['注册会员', '密码管理', '地址管理']},
+            {t: '买家帮助', c: ['充值和提现', '退款说明']},
+            {t: '支付方式', c: ['支付宝支付', '余额支付', '微信支付']},
+            {t: '售后服务', c: ['买家接货标准', '交易纠纷处理细则', '活体退换货注意事项']},
+            {t: '商家服务', c: ['入驻资质', '订单结算']},
+            {t: '服务支持', c: ['客服1 18935156337', '客服 QQ 2850671559', '工作时间 9：00-18：30']},
+          ]
+
+        }
+      },
+      methods: {
+        getUserInfo() {
+          this.userInfo.name = sessionStorage.getItem("SkyUserName");
+          this.userInfo.id = sessionStorage.getItem("SkyUserId");
+          /*  alert(sessionStorage.getItem("SkyUserId")) */
+        },
+        ok() {
+          sessionStorage.removeItem('SkyUserName')
+          sessionStorage.removeItem('SkyUserId')
+          this.userInfo.name = null
+          this.userInfo.id = null
+        },
+        cancel() {
+        },
+        getCars() {
+          if (this.userInfo.id == null) {
+            this.$Message.info('请先登录');
+            setTimeout("window.location.href = '/toLogin?type=login'", 1500)
+          } else {
+            window.location.href = "/ShoppingCart"
+          }
+        },
+        getOrderlistss() {
+          if (this.userInfo.id == null) {
+            this.$Message.info('请先登录');
+            setTimeout("window.location.href = '/toLogin?type=login'", 1500)
+          } else {
+            window.location.href = "/orderList"
+          }
+        },
+        goSearch() {
+          window.location.href = "/goodList?search=" + encodeURI(this.searchcont)
+        },
+        /*获取地址栏参数*/
+        getHrefParam(key) {
+          let s = window.location.href;
+          let reg = new RegExp(key + "=\\w+");
+          let rs = reg.exec(s);
+          if (rs === null || rs === undefined) {
+            return "";
+          } else {
+            return rs[0].split("=")[1];
+          }
+        },
+        getSearchKeyWord(key) {
+          let reg = new RegExp("(^|&)" + key + "=([^&]*)(&|$)", "i");
+          let r = window.location.search.substr(1).match(reg);
+          if (r != null) return decodeURI(r[2]);
+          return null;
+        },
+        formatData(now) {
+          var date = new Date(now);
+          var year = date.getFullYear();
+          var month = date.getMonth() + 1;
+          var day = date.getDate();
+          var month = month < 10 ? "0" + month : month;
+          var day = day < 10 ? "0" + day : day;
+          return year + '-' + month + '-' + day;
+        },
+      },
+      mounted() {
+        this.getUserInfo()
+        this.$Loading.start();
+        setTimeout(() => {
+          this.$Loading.finish()
+        }, 100)
+      }
+    })
+  </script>
+  <script>
+    $(".navli").click(function () {
+      $(".nav-span").slideToggle();
+    });
+  </script>
+</div>
+</body>
+
+</html>

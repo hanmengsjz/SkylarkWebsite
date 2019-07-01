@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.websit.mapper.T_accessMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.websit.entity.T_access">
+        <id column="id" property="id" />
+        <result column="Count" property="Count" />
+        <result column="number" property="number" />
+        <result column="create_time" property="create_time" />
+    </resultMap>
+    
+    <select id="conent" resultType="com.websit.entity.T_access">
+      select number,Count from t_access where create_time='2019-03-20'
+    
+    </select>
+    
+    
+    <insert id="insert" >
+    
+    
+    insert into t_access(number,create_time)value(1,'2019-03-20')
+    
+    </insert>
+   
+    
+     <update id="updatenumber">
+      update t_access set  number=number+1  where create_time='2019-03-20'
+    
+    </update>
+    
+
+</mapper>

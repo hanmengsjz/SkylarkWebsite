@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.websit.mapper.T_salesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.websit.entity.T_sales">
+        <id column="sales_id" property="sales_id" />
+        <result column="order_id" property="order_id" />
+        <result column="sales_cause" property="sales_cause" />
+        <result column="cause_type" property="cause_type" />
+        <result column="cause_explain" property="cause_explain" />
+        <result column="cause_time" property="cause_time" />
+        <result column="stele" property="stele" />
+        <result column="sales_no" property="sales_no" />
+    </resultMap>
+    <update id="updatestaletrtr">
+    update T_sales  set T_sales.stele=#{stale}  where sales_id=#{sales_id}
+  
+    </update>
+    <select id="th_list"  resultType="com.websit.entityvo.th_list">
+    select  t.sales_no,t.order_id,t.cause_time,dd.order_money as zongjia,t.cause_type,t.sales_cause,t.cause_explain,dd.order_state,dd.user_id,US.nickname  from T_sales   t   join   t_order dd  ON  dd.order_id=t.order_id  join  t_user US  ON  US.id=dd.user_id 
+  order by cause_time desc
+    </select>
+    
+        <select id="seleth_list"  resultType="com.websit.entityvo.shopinglist">
+SELECT             s.*,t.*,
+                   
+                    pt. name producttypename,
+                    pt. id producttypeid, 
+                    p.name productName,
+                    p.image image,
+                    
+                  
+                   
+                    p.create_time create_times,
+                    p.state state,
+                    
+                    p.describes describion
+
+                 
+               
+                FROM
+                    t_product p 
+                    join t_product_type pt on p.product_type_id = pt.id
+
+                    join t_classification tc on pt.classification_id = tc.id
+                    join t_shopping  t on t.product_id=p.id
+                    JOIN  t_order    r  on r.order_no=t.order_id
+                    JOIN  t_sales   s  on s.order_id=r.order_id
+                    
+                    where 
+                      s.order_id=#{no}
+                    
+  
+    </select>
+    
+            <select id="order_listr"  resultType="com.websit.entityvo.order_listr">
+      SELECT * FROM `t_sales`  t  join   t_user  US  on US.id=t.user_id  where 1=1
+      <if test=" stale != null and stale != ''">
+	
+		and	 stele=#{stale} 
+			
+	</if>
+	  <if test=" user_id != null and user_id != ''">
+	
+		and  user_id=#{user_id}
+			
+	</if>
+                    
+                   
+                    
+        order by cause_time desc             
+  
+    </select>
+    
+
+</mapper>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/assets/css/bbs.css">
+  <div th:replace="/home/common :: commonHeader(云阙论坛)"></div>
+</head>
+<body>
+<div id="app">
+  <div class="banner">
+    <div th:replace="/home/common :: commonNav"></div>
+    <img src="/assets/image/bbs/banner.png" alt="">
+  </div>
+  <div class="cont bbsIndex">
+    <div class="banner">
+      <div class="slide">
+        <carousel style="height: 100%" autoplay loop>
+          <carousel-item>
+            <div class="demo-carousel">1</div>
+          </carousel-item>
+          <carousel-item>
+            <div class="demo-carousel">2</div>
+          </carousel-item>
+          <carousel-item>
+            <div class="demo-carousel">3</div>
+          </carousel-item>
+          <carousel-item>
+            <div class="demo-carousel">4</div>
+          </carousel-item>
+        </carousel>
+      </div>
+      <div class="hot">
+        <tabs type="card">
+          <tab-pane label="热门帖子">
+            <ul class="">
+              <template v-for="(item,index) in hotPost">
+                <li>{{index+1}}.
+                  <a class="module" :href="'/forum?id='+item.t_plate.id">[{{item.t_plate.plate_name}}]</a>
+                  <a class="title" :href="'/post?id='+item.id">{{item.title}}</a>
+                  <span class="date">2019-03-15</span>
+                </li>
+              </template>
+            </ul>
+          </tab-pane>
+          <tab-pane label="最新帖子">
+            <ul class="">
+              <template v-for="(item,index) in newPost">
+                <li>{{index+1}}.
+                  <a class="module" :href="'/forum?id='+item.t_plate.id">[{{item.t_plate.plate_name}}]</a>
+                  <a class="title" :href="'/post?id='+item.id">{{item.title}}</a>
+                  <span class="date">2019-03-15</span>
+                </li>
+              </template>
+            </ul>
+          </tab-pane>
+          <tab-pane label="精华帖子">
+            <ul class="">
+              <template v-for="(item,index) in goodPost">
+                <li>{{index+1}}.
+                  <a class="module" :href="'/forum?id='+item.t_plate.id">[{{item.t_plate.plate_name}}]</a>
+                  <a class="title" :href="'/post?id='+item.id">{{item.title}}</a>
+                  <span class="date">2019-03-15</span>
+                </li>
+              </template>
+            </ul>
+          </tab-pane>
+        </tabs>
+      </div>
+    </div>
+    <div class="visit">
+      今日: <span class="num">{{visit.todayCount}}</span><span class="line">|</span>昨日: <span class="num">{{visit.yesterdayCount}}</span><span
+            class="line">|</span>帖子总数: <span class="num">{{visit.totalPostCount}}</span><span class="line"><span
+            class="line">|</span></span>会员数:
+      <span class="num">{{visit.userCount}}</span><span class="line">|</span>在线: <span class="num">32</span><span
+            class="line">|</span>欢迎新会员:
+      <span class="new">李少章</span>
+    </div>
+    <template v-for="(item,index) in module">
+      <div class="module">
+        <div class="titleBox">
+          <img src="/assets/image/test/2.png" alt="">
+          <div class="title"><span class="em">{{item.name}}</span></div>
+        </div>
+        <div class="moduleCont">
+          <template v-for="(item_c,index_c) in item.t_plate">
+            <div class="moduleBox">
+              <img :src="item_c.image" alt=""/>
+              <div class="moduleBoxInfo">
+                <div class="title">
+                  <span class="name"><a :href="'/forum?id='+item_c.id">{{item_c.plate_name}}</a></span>
+                  <span class="moduleVisit">今日: 5 主题: 1万 贴数: 9万</span>
+                </div>
+                <div class="tags">
+                  <template v-for="(item_tag,index_c) in item_c.tagList">
+                    <span class="tag">[{{item_tag.tag_name}}]</span>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+  </div>
+  <div th:replace="/home/common :: commonFooter"></div>
+</div>
+<script>
+  const mixin = {
+    data() {
+      return {
+        module: [],
+        visit: {},
+        hotPost: [],
+        goodPost: [],
+        newPost: []
+      }
+    },
+    methods: {
+      /*首页板块*/
+      getModule() {
+        $.ajax({
+          type: "post",
+          url: "/t_plate/showAllPlates",
+          dataType: "json",
+          success: (res) => {
+            console.log(res)
+            if (res.code == 1) {
+              this.module = res.data
+            }
+          }
+        });
+      },
+      /*在线数据*/
+      getVisit() {
+        $.ajax({
+          type: "post",
+          url: "/showPostCount",
+          dataType: "json",
+          success: (res) => {
+            console.log(res)
+            if (res.code == 1) {
+              this.visit = res.data
+            }
+          }
+        })
+      },
+      /*热帖*/
+      getHotPost() {
+        $.ajax({
+          type: "post",
+          url: "/showHotPostings",
+          data: {row: 8},
+          dataType: "json",
+          success: (res) => {
+            console.log(res)
+            if (res.code == 1) {
+              this.hotPost = res.data
+            }
+          }
+        })
+      },
+      /*最新帖子*/
+      getNewPost() {
+        $.ajax({
+          type: "post",
+          url: "/showNewestPostings",
+          data: {row: 8},
+          dataType: "json",
+          success: (res) => {
+            console.log(res)
+            if (res.code == 1) {
+              this.newPost = res.data
+            }
+          }
+        })
+      },
+      /*精品帖子*/
+      getGoodPost() {
+        $.ajax({
+          type: "post",
+          url: "/showGoodPostings",
+          data: {row: 8},
+          dataType: "json",
+          success: (res) => {
+            console.log(res)
+            if (res.code == 1) {
+              this.goodPost = res.data
+            }
+          }
+        })
+      }
+    },
+    mounted() {
+      this.getModule()
+      this.getVisit()
+      this.getHotPost()
+      this.getNewPost()
+      this.getGoodPost()
+    }
+  }
+</script>
+<div th:replace="/home/common :: commonFooterjs"></div>
+</body>
+</html>
