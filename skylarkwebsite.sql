@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50617
 File Encoding         : 65001
 
-Date: 2019-07-01 13:48:24
+Date: 2019-07-16 14:54:05
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -55,7 +55,7 @@ CREATE TABLE `t_access` (
   `number` bigint(20) DEFAULT NULL COMMENT '网站访问量',
   `create_time` date NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8 COMMENT='会员与访问数量表';
+) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8 COMMENT='会员与访问数量表';
 
 -- ----------------------------
 -- Records of t_access
@@ -117,6 +117,7 @@ INSERT INTO `t_access` VALUES ('69', null, '15', '2019-06-03');
 INSERT INTO `t_access` VALUES ('70', null, '10', '2019-06-04');
 INSERT INTO `t_access` VALUES ('71', null, '3', '2019-06-05');
 INSERT INTO `t_access` VALUES ('72', null, '3', '2019-06-06');
+INSERT INTO `t_access` VALUES ('73', null, '9', '2019-07-16');
 
 -- ----------------------------
 -- Table structure for t_admin
