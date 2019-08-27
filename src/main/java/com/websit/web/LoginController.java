@@ -571,7 +571,7 @@ public class LoginController {
 	 *
 	 * @Title: register
 	 * 
-	 * @description 登陆
+	 * @description 后台登陆
 	 * @param @param
 	 *            phone 电话号码
 	 * @param @param

@@ -160,9 +160,9 @@ public class UpdateFile {
 	   String fileType = originalFilename.substring(originalFilename.lastIndexOf(".")).replace(".", "");
 	   //System.out.println("fileType"+fileType);
 	   Key = picLocation+UUID.randomUUID().toString().toUpperCase().replace("-", "")+"."+fileType;
-	// 设置URL过期时间为10年。
+	// 设置URL过期时间为70年。
 	   Date expiration = new Date(new Date().getTime() + 3600l * 1000* 24 * 30 * 12 * 70);
-	   // 生成以GET方法访问的签名URL，访客可以直接通过浏览器访问相关内容。
+	   // 生成以GET方法访问的签名URL，访客可以直接通过浏览器访问相关内容。3600 * 1000l * 24 * 30 * 12 * 10
 	  
 	   //上传文件到阿里云
 	    PutObjectResult putObject = ossClient.putObject(bucketName, Key, is);
